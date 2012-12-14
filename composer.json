@@ -1,0 +1,44 @@
+{
+    "name": "dflydev/embedded-composer",
+    "description": "Embed Composer into another application",
+    "keywords": ["embedded", "composer", "extensibility"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dragonfly Development Inc.",
+            "email": "info@dflydev.com",
+            "homepage": "http://dflydev.com"
+        },
+        {
+            "name": "Beau Simensen",
+            "email": "beau@dflydev.com",
+            "homepage": "http://beausimensen.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.2",
+        "composer/composer": "1.*@dev",
+        "seld/jsonlint": "1.*"
+    },
+    "require-dev": {
+        "symfony/console": "~2.1",
+        "symfony/http-kernel": "~2.1"
+    },
+    "suggest": {
+        "symfony/console": "~2.1",
+        "symfony/http-kernel": "~2.1"
+    },
+    "replace": {
+        "dflydev/embedded-composer-bundle": "self.version",
+        "dflydev/embedded-composer-console": "self.version",
+        "dflydev/embedded-composer-core": "self.version"
+    },
+    "autoload": {
+        "psr-0": { "Dflydev\\EmbeddedComposer": "src" }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
+}
