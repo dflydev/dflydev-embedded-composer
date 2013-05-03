@@ -14,7 +14,6 @@ namespace Dflydev\EmbeddedComposer\Core;
 use Composer\Autoload\ClassLoader;
 use Composer\Factory;
 use Composer\Json\JsonFile;
-use Composer\Package\PackageInterface;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilesystemRepository;
@@ -30,7 +29,10 @@ class EmbeddedComposer implements EmbeddedComposerInterface
     protected $classLoader;
     protected $externalRootDir;
     protected $package;
+    protected $packageName;
     protected $hasInternalRepository = false;
+    protected $internalRepository;
+    protected $installedRepository;
     protected $composerFile;
     protected $config;
     private $composer;
@@ -39,20 +41,21 @@ class EmbeddedComposer implements EmbeddedComposerInterface
     /**
      * Constructor.
      *
-     * @param ClassLoader      $classLoader     Class loader
-     * @param string           $externalRootDir External root directory
-     * @param PackageInterface $package         Package
+     * @param ClassLoader $classLoader     Class loader
+     * @param string      $externalRootDir External root directory
+     * @param string      $packageName     Package name
      */
-    public function __construct(ClassLoader $classLoader, $externalRootDir = '.', PackageInterface $package = null)
+    public function __construct(ClassLoader $classLoader, $externalRootDir = '.', $packageName = null)
     {
         $this->classLoader = $classLoader;
         $this->externalRootDir = $externalRootDir ?: '.';
-        $this->package = $package;
+        $this->packageName = $packageName;
 
         $obj = new \ReflectionClass($this->classLoader);
         $this->internalVendorDir = dirname(dirname($obj->getFileName()));
 
-        if (strpos($this->internalVendorDir, 'phar://')==0 || false===strpos($this->internalVendorDir, $externalRootDir)) {
+        if (strpos($this->internalVendorDir, 'phar://')==0 ||
+            false===strpos($this->internalVendorDir, $externalRootDir)) {
             // If our vendor root does not contain our project root then we
             // can assume that we should enable the internally installed
             // repository.
@@ -114,7 +117,27 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function getPackage()
     {
-        return $this->package;
+        if (null !== $this->package) {
+            return $this->package;
+        }
+
+        if (null === $this->packageName) {
+            return null;
+        }
+
+        $repository = new CompositeRepository(array($this->getInstalledRepository()));
+        if ($this->hasInternalRepository()) {
+            $repository->addRepository($this->getInternalRepository());
+        }
+
+        $packages = $this->getCanonicalPackages($repository->findPackages($this->packageName));
+        if ($packages) {
+            return $this->package = $packages[0];
+        }
+
+        throw new \InvalidArgumentException(
+            sprintf("Embedded package '%s' could not be found", $this->packageName)
+        );
     }
 
     /**
@@ -144,17 +167,30 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function getInternalRepository()
     {
+        if (null !== $this->internalRepository) {
+            return $this->internalRepository;
+        }
+
         if (!$this->hasInternalRepository) {
             return null;
         }
 
         $internalRepositoryFile = $this->internalVendorDir.'/composer/installed.json';
-        $filesystemRepository = new FilesystemRepository(new JsonFile($internalRepositoryFile));
+        $internalRepositoryJsonFile = new JsonFile($internalRepositoryFile);
 
-        return new CompositeRepository(array(
-            new ArrayRepository(array($this->package)),
-            $filesystemRepository
-        ));
+        return $this->internalRepository = new FilesystemRepository($internalRepositoryJsonFile);
+    }
+
+    public function getInstalledRepository()
+    {
+        if (null !== $this->installedRepository) {
+            return $this->installedRepository;
+        }
+
+        $internalRepositoryFile = $this->internalVendorDir.'/composer/installed.json';
+        $internalRepositoryJsonFile = new JsonFile($internalRepositoryFile);
+
+        return $this->internalRepository = new FilesystemRepository($internalRepositoryJsonFile);
     }
 
     /**
@@ -172,12 +208,7 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function processExternalAutoloads()
     {
-        $rootDir = $this->externalRootDir;
-
-        $vendorDir = $this->config->get('vendor-dir');
-        if (0 !== strpos($vendorDir, '/')) {
-            $vendorDir = $rootDir.'/'.$vendorDir;
-        }
+        $vendorDir = $this->getVendorDir();
 
         if ($autoloadNamespacesFile = realpath($vendorDir.'/composer/autoload_namespaces.php')) {
             if ($this->internalVendorDir != dirname(dirname($autoloadNamespacesFile))) {
@@ -200,5 +231,42 @@ class EmbeddedComposer implements EmbeddedComposerInterface
                 }
             }
         }
+    }
+
+    public function getVendorDir()
+    {
+        $rootDir = $this->externalRootDir;
+
+        $vendorDir = $this->config->get('vendor-dir');
+        if (0 !== strpos($vendorDir, '/')) {
+            $vendorDir = $rootDir.'/'.$vendorDir;
+        }
+
+        return $vendorDir;
+    }
+
+    private function getCanonicalPackages($packages)
+    {
+        // get at most one package of each name, prefering non-aliased ones
+        $packagesByName = array();
+        foreach ($packages as $package) {
+            if (!isset($packagesByName[$package->getName()]) ||
+                $packagesByName[$package->getName()] instanceof AliasPackage) {
+                $packagesByName[$package->getName()] = $package;
+            }
+        }
+
+        $canonicalPackages = array();
+
+        // unfold aliased packages
+        foreach ($packagesByName as $package) {
+            while ($package instanceof AliasPackage) {
+                $package = $package->getAliasOf();
+            }
+
+            $canonicalPackages[] = $package;
+        }
+
+        return $canonicalPackages;
     }
 }
