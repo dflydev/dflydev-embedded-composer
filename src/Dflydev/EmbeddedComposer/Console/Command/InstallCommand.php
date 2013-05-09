@@ -61,7 +61,7 @@ EOT
         $embeddedComposer = $this->getApplication()->getEmbeddedComposer();
 
         $io = new ConsoleIO($input, $output, $this->getApplication()->getHelperSet());
-        $composer = Factory::create($io, $embeddedComposer->getComposerFile());
+        $composer = Factory::create($io, $embeddedComposer->getExternalComposerFilename());
         $install = Installer::create($io, $composer);
 
         $install

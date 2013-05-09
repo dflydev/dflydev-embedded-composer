@@ -19,25 +19,68 @@ namespace Dflydev\EmbeddedComposer\Core;
 interface EmbeddedComposerInterface
 {
     /**
-     * Class Loader
+     * Get the active class loader (may be internal or external)
      *
-     * @return ClassLoader
+     * @return mixed
      */
     public function getClassLoader();
 
     /**
-     * External Root Directory
+     * Find a package by name
+     *
+     * @param string $name Package name
+     *
+     * @return \Composer\Package\PackageInterface
+     */
+    public function findPackage($name);
+
+    /**
+     * Process any additional external Composer autoloader definitions
+     */
+    public function processAdditionalAutoloads();
+
+    /**
+     * Get a repository repository representing the external repository and
+     * the internal repository if it exists.
+     *
+     * @return \Composer\Repository\RepositoryInterface;
+     */
+    public function getRepository();
+
+    /**
+     * Get the external repository
+     *
+     * @return \Composer\Repository\RepositoryInterface;
+     */
+    public function getExternalRepository();
+
+    /**
+     * Get external root directory
      *
      * @return string
      */
-    public function getExternalRootDir();
+    public function getExternalRootDirectory();
 
     /**
-     * Package
+     * Composer configuration
      *
-     * @return PackageInterface
+     * @return \Composer\Config
      */
-    public function getPackage();
+    public function getExternalComposerConfig();
+
+    /**
+     * Get the full path to the Composer file to process
+     *
+     * @return \Composer\Config
+     */
+    public function getExternalComposerFilename();
+
+    /**
+     * Get the internal repository
+     *
+     * @return \Composer\Repository\RepositoryInterface;
+     */
+    public function getInternalRepository();
 
     /**
      * Has an internal repository?
@@ -45,30 +88,4 @@ interface EmbeddedComposerInterface
      * @return bool
      */
     public function hasInternalRepository();
-
-    /**
-     * Composer file
-     *
-     * @return string
-     */
-    public function getComposerFile();
-
-    /**
-     * Get internal repository
-     *
-     * @return \Composer\Repository\RepositoryInterface;
-     */
-    public function getInternalRepository();
-
-    /**
-     * Error
-     *
-     * @return \Exception
-     */
-    public function getError();
-
-    /**
-     * Process external autoloads.
-     */
-    public function processExternalAutoloads();
 }

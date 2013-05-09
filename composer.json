@@ -15,6 +15,12 @@
             "homepage": "http://beausimensen.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/simensen/composer"
+        }
+    ],
     "require": {
         "php": ">=5.3.2",
         "composer/composer": "dev-root-installed as 1.0.*@dev",
