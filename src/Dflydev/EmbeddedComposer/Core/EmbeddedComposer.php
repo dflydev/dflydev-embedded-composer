@@ -118,7 +118,9 @@ class EmbeddedComposer implements EmbeddedComposerInterface
 
         if ($this->hasInternalRepository) {
             if (file_exists($autoload = $this->externalVendorDirectory.'/autoload.php')) {
-                require_once $autoload;
+                $classLoader = require_once $autoload;
+                $classLoader->unregister();
+                $classLoader->register();
             }
         }
     }
