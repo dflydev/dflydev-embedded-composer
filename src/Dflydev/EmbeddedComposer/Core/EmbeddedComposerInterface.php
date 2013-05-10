@@ -11,6 +11,9 @@
 
 namespace Dflydev\EmbeddedComposer\Core;
 
+use Composer\Installer;
+use Composer\IO\IOInterface;
+
 /**
  * Embedded Composer Interface.
  *
@@ -38,6 +41,22 @@ interface EmbeddedComposerInterface
      * Process any additional external Composer autoloader definitions
      */
     public function processAdditionalAutoloads();
+
+    /**
+     * Create a Composer instance
+     *
+     * @param IOInterface $io IO
+     *
+     * @return \Composer\Composer
+     */
+    public function createComposer(IOInterface $io);
+
+    /**
+     * Configure an Installer instance
+     *
+     * @param Installer $installer Installer
+     */
+    public function configureInstaller(Installer $installer);
 
     /**
      * Get a repository repository representing the external repository and

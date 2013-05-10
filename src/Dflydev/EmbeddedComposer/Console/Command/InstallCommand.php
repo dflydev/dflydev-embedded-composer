@@ -61,20 +61,18 @@ EOT
         $embeddedComposer = $this->getApplication()->getEmbeddedComposer();
 
         $io = new ConsoleIO($input, $output, $this->getApplication()->getHelperSet());
-        $composer = Factory::create($io, $embeddedComposer->getExternalComposerFilename());
-        $install = Installer::create($io, $composer);
+        $composer = $embeddedComposer->createComposer($io);
+        $installer = Installer::create($io, $composer);
 
-        $install
+        $installer
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($input->getOption('prefer-source'))
             ->setDevMode($input->getOption('dev'))
             ->setRunScripts(!$input->getOption('no-scripts'));
 
-        if ($embeddedComposer->hasInternalRepository()) {
-            $install->setAdditionalInstalledRepository($embeddedComposer->getInternalRepository());
-        }
+        $embeddedComposer->configureInstaller($installer);
 
-        return $install->run() ? 0 : 1;
+        return $installer->run() ? 0 : 1;
     }
 }
