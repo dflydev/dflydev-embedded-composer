@@ -52,11 +52,11 @@ interface EmbeddedComposerInterface
     public function createComposer(IOInterface $io);
 
     /**
-     * Configure an Installer instance
+     * Create an Installer instance
      *
      * @param Installer $installer Installer
      */
-    public function configureInstaller(Installer $installer);
+    public function createInstaller(IOInterface $io);
 
     /**
      * Get a repository repository representing the external repository and

@@ -67,8 +67,7 @@ EOT
         $embeddedComposer = $this->getApplication()->getEmbeddedComposer();
 
         $io = new ConsoleIO($input, $output, $this->getApplication()->getHelperSet());
-        $composer = $embeddedComposer->createComposer($io);
-        $installer = Installer::create($io, $composer);
+        $installer = $embeddedComposer->createInstaller($io);
 
         $installer
             ->setDryRun($input->getOption('dry-run'))
@@ -78,8 +77,6 @@ EOT
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setUpdate(true)
             ->setUpdateWhitelist($input->getArgument('packages'));
-
-        $embeddedComposer->configureInstaller($installer);
 
         return $installer->run() ? 0 : 1;
     }

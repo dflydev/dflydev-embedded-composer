@@ -12,6 +12,7 @@
 namespace Dflydev\EmbeddedComposer\Core;
 
 use Composer\Autoload\ClassLoader;
+use Composer\Config;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\IO\IOInterface;
@@ -21,6 +22,7 @@ use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Repository\FilesystemRepository;
+use Composer\Repository\RepositoryInterface;
 use Seld\JsonLint\ParsingException;
 
 /**
@@ -53,69 +55,42 @@ class EmbeddedComposer implements EmbeddedComposerInterface
     /**
      * Constructor.
      *
-     * @param ClassLoader $classLoader           Class loader
-     * @param string      $externalRootDirectory External root directory
+     * @param ClassLoader         $classLoader
+     * @param string              $externalRootDirectory
+     * @param RepositoryInterface $externalRepository,
+     * @param string              $externalComposerFilename,
+     * @param Config              $externalComposerConfig,
+     * @param string              $externalVendorDirectory,
+     * @param bool                $externalVendorDirectoryOverride,
+     * @param RepositoryInterface $internalRepository,
+     * @param string              $internalVendorDirectory,
+     * @param bool                $hasInternalRepository,
+     * @param RepositoryInterface $repository
      */
-    public function __construct(ClassLoader $classLoader, $externalRootDirectory = null)
-    {
+    public function __construct(
+        ClassLoader $classLoader,
+        $externalRootDirectory,
+        RepositoryInterface $externalRepository,
+        $externalComposerFilename,
+        Config $externalComposerConfig,
+        $externalVendorDirectory,
+        $externalVendorDirectoryOverride,
+        RepositoryInterface $internalRepository,
+        $internalVendorDirectory,
+        $hasInternalRepository,
+        RepositoryInterface $repository
+    ) {
         $this->classLoader = $classLoader;
-        $this->externalRootDirectory = $externalRootDirectory ?: getcwd();
-
-        $obj = new \ReflectionClass($classLoader);
-        $this->internalVendorDirectory = dirname(dirname($obj->getFileName()));
-
-        if (0 === strpos($this->internalVendorDirectory, 'phar://') ||
-            false === strpos($this->internalVendorDirectory, $this->externalRootDirectory)) {
-            // If our vendor root does not contain our project root then we
-            // can assume that we have an internal repository.
-            $this->hasInternalRepository = true;
-        }
-    }
-
-    /**
-     * Set the name of the composer file
-     *
-     * Will default to <code>\Composer\Factory::getComposerFile()</code> if not
-     * specified.
-     *
-     * @param string $composerFilename Composer filename
-     *
-     * @return EmbeddedComposerInterface
-     */
-    public function setComposerFilename($composerFilename)
-    {
-        if ($this->initialized) {
-            throw new \LogicException(
-                "Cannot call setComposerFilename() once EmbeddedComposer's configuration has been frozen"
-            );
-        }
-
-        $this->composerFilename = $composerFilename;
-
-        return $this;
-    }
-
-    /**
-     * Set the vendor directory
-     *
-     * Will default to <code>\Composer\Config::get('vendor-dir')</code> if not
-     * specified.
-     *
-     * @param string $vendorDirectory Vendor directory
-     *
-     * @return EmbeddedComposerInterface
-     */
-    public function setVendorDirectory($vendorDirectory)
-    {
-        if ($this->initialized) {
-            throw new \LogicException(
-                "Cannot call setVendorDirectory() once EmbeddedComposer's configuration has been frozen"
-            );
-        }
-
-        $this->vendorDirectory = $vendorDirectory;
-
-        return $this;
+        $this->externalRootDirectory = $externalRootDirectory;
+        $this->externalRepository = $externalRepository;
+        $this->externalComposerFilename = $externalComposerFilename;
+        $this->externalComposerConfig = $externalComposerConfig;
+        $this->externalVendorDirectory = $externalVendorDirectory;
+        $this->externalVendorDirectoryOverride = $externalVendorDirectoryOverride;
+        $this->internalRepository = $internalRepository;
+        $this->internalVendorDirectory = $internalVendorDirectory;
+        $this->hasInternalRepository = $hasInternalRepository;
+        $this->repository = $repository;
     }
 
     /**
@@ -123,8 +98,6 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function getClassLoader()
     {
-        $this->init();
-
         return $this->classLoader;
     }
 
@@ -133,8 +106,6 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function findPackage($name)
     {
-        $this->init();
-
         $package = null;
 
         $foundPackages = $this->repository->findPackages($name);
@@ -152,8 +123,6 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function processAdditionalAutoloads()
     {
-        $this->init();
-
         if ($this->hasInternalRepository) {
             if (file_exists($autoload = $this->externalVendorDirectory.'/autoload.php')) {
                 $this->classLoader->unregister();
@@ -162,33 +131,18 @@ class EmbeddedComposer implements EmbeddedComposerInterface
             }
         }
     }
+
     /**
      * {@inheritdoc}
      */
     public function createComposer(IOInterface $io)
     {
-        $this->init();
-
         if (! $this->externalVendorDirectoryOverride) {
             $originalComposerVendorDir = getenv('COMPOSER_VENDOR_DIR');
             putenv('COMPOSER_VENDOR_DIR='.$this->externalVendorDirectory);
         }
 
         $composer = Factory::create($io, $this->externalComposerFilename);
-
-        /*
-        $composer->getRepositoryManager()->setLocalRepository(
-            $this->externalRepository
-        );
-        */
-
-        /*
-        $composer->getConfig()->merge(array(
-            'config' => array(
-                'vendor-dir' => $this->externalVendorDirectory,
-            )
-        ));
-        */
 
         if (! $this->externalVendorDirectoryOverride) {
             if (false !== $originalComposerVendorDir) {
@@ -202,15 +156,18 @@ class EmbeddedComposer implements EmbeddedComposerInterface
     /**
      * {@inheritdoc}
      */
-    public function configureInstaller(Installer $installer)
+    public function createInstaller(IOInterface $io)
     {
-        $this->init();
+        $composer = $this->createComposer($io);
+        $installer = Installer::create($io, $composer);
 
         if ($this->hasInternalRepository) {
             $installer->setAdditionalInstalledRepository(
                 $this->internalRepository
             );
         }
+
+        return $installer;
     }
 
     /**
@@ -218,8 +175,6 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function getRepository()
     {
-        $this->init();
-
         return $this->repository;
     }
 
@@ -230,8 +185,6 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function getExternalRepository()
     {
-        $this->init();
-
         return $this->externalRepository;
     }
 
@@ -240,8 +193,6 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function getExternalRootDirectory()
     {
-        $this->init();
-
         return $this->externalRootDirectory;
     }
 
@@ -250,8 +201,6 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function getExternalComposerConfig()
     {
-        $this->init();
-
         return $this->externalComposerConfig;
     }
 
@@ -260,8 +209,6 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function getExternalComposerFilename()
     {
-        $this->init();
-
         return $this->externalComposerFilename;
     }
 
@@ -272,8 +219,6 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function getInternalRepository()
     {
-        $this->init();
-
         return $this->internalRepository;
     }
 
@@ -282,132 +227,6 @@ class EmbeddedComposer implements EmbeddedComposerInterface
      */
     public function hasInternalRepository()
     {
-        $this->init();
-
         return $this->hasInternalRepository;
-    }
-
-    private function init()
-    {
-        if ($this->initialized) {
-            return;
-        }
-
-        //
-        // External Composer Filename
-        //
-
-        $externalComposerFilename = $this->composerFilename ?: Factory::getComposerFile();
-        $pristineExternalComposerFilename = $externalComposerFilename;
-
-        if (0 !== strpos($externalComposerFilename, '/')) {
-            $externalComposerFilename = $this->externalRootDirectory.'/'.$externalComposerFilename;
-        }
-
-        $this->externalComposerFilename = $externalComposerFilename;
-
-
-        //
-        // External Composer Config
-        //
-
-        $externalComposerConfig = Factory::createConfig();
-
-        $configJsonFile = new JsonFile($externalComposerFilename);
-
-        if ($configJsonFile->exists()) {
-            try {
-                $configJsonFile->validateSchema(JsonFile::LAX_SCHEMA);
-                $localConfig = $configJsonFile->read();
-                if (isset($localConfig['config']['vendor-dir'])) {
-                    $this->externalVendorDirectoryOverride = true;
-                }
-                $externalComposerConfig->merge($localConfig);
-            } catch (ParsingException $e) {
-                $this->error = $e;
-            }
-        } else {
-            if ($pristineExternalComposerFilename === 'composer.json') {
-                $message = 'Composer could not find a composer.json file in '.realpath($this->externalRootDirectory);
-            } else {
-                $message = 'Composer could not find the config file: '.$externalComposerFilename;
-            }
-            $instructions = 'To initialize a project, please create a '.
-                $pristineExternalComposerFilename.
-                ' file as described in the http://getcomposer.org/ "Getting Started" section';
-
-            $this->error = new \InvalidArgumentException($message.PHP_EOL.$instructions);
-        }
-
-        $this->externalComposerConfig = $externalComposerConfig;
-
-
-        //
-        // External Vendor Directory
-        //
-
-        $externalVendorDirectory = ($this->externalVendorDirectoryOverride || ! $this->vendorDirectory)
-            ? $externalComposerConfig->get('vendor-dir')
-            : $this->vendorDirectory;
-
-        if (0 !== strpos($externalVendorDirectory, '/')) {
-            $externalVendorDirectory = $this->externalRootDirectory.'/'.$externalVendorDirectory;
-        }
-
-        $this->externalVendorDirectory = $externalVendorDirectory;
-
-
-        //
-        // External Repository
-        //
-
-        $externalRepository = new InstalledFilesystemRepository(
-            new JsonFile($externalVendorDirectory.'/composer/installed.json')
-        );
-
-        $this->externalRepository = $externalRepository;
-
-
-        //
-        // Internal Repository
-        //
-
-        $internalRepository = new CompositeRepository(array());
-
-        if ($this->hasInternalRepository) {
-            $internalInstalledRepository = new InstalledFilesystemRepository(
-                new JsonFile(
-                    $this->internalVendorDirectory.'/composer/installed.json'
-                )
-            );
-
-            $internalRepository->addRepository($internalInstalledRepository);
-        }
-
-        $rootPackageFilename = $this->internalVendorDirectory.'/dflydev/embedded-composer/.root_package.json';
-        if (file_exists($rootPackageFilename)) {
-            $rootPackageRepository = new FilesystemRepository(
-                new JsonFile($rootPackageFilename)
-            );
-
-            $internalRepository->addRepository($rootPackageRepository);
-        }
-
-        $this->internalRepository = $internalRepository;
-
-
-        //
-        // Repository
-        //
-
-        $repository = new CompositeRepository(array(
-            $externalRepository,
-            $internalRepository
-        ));
-
-        $this->repository = $repository;
-
-
-        $this->initialized = true;
     }
 }
