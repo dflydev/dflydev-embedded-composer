@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Package\AliasPackage;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledFilesystemRepository;
@@ -134,11 +135,16 @@ class EmbeddedComposer implements EmbeddedComposerInterface
     {
         $this->init();
 
-        if ($packages = $this->getCanonicalPackages($this->repository->findPackages($name))) {
-            return $packages[0];
+        $package = null;
+
+        $foundPackages = $this->repository->findPackages($name);
+        foreach ($foundPackages as $foundPackage) {
+            if (null === $package || $foundPackage instanceof AliasPackage) {
+                $package = $foundPackage;
+            }
         }
 
-        return null;
+        return $package;
     }
 
     /**
@@ -403,30 +409,5 @@ class EmbeddedComposer implements EmbeddedComposerInterface
 
 
         $this->initialized = true;
-    }
-
-    private function getCanonicalPackages($packages)
-    {
-        // get at most one package of each name, prefering non-aliased ones
-        $packagesByName = array();
-        foreach ($packages as $package) {
-            if (!isset($packagesByName[$package->getName()]) ||
-                $packagesByName[$package->getName()] instanceof AliasPackage) {
-                $packagesByName[$package->getName()] = $package;
-            }
-        }
-
-        $canonicalPackages = array();
-
-        // unfold aliased packages
-        foreach ($packagesByName as $package) {
-            while ($package instanceof AliasPackage) {
-                $package = $package->getAliasOf();
-            }
-
-            $canonicalPackages[] = $package;
-        }
-
-        return $canonicalPackages;
     }
 }
