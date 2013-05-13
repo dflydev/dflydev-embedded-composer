@@ -106,7 +106,13 @@ class EmbeddedComposerBuilder
         // External Composer Filename
         //
 
-        $externalComposerFilename = $this->composerFilename ?: Factory::getComposerFile();
+        if ($this->hasInternalRepository) {
+            $externalComposerFilename = $this->composerFilename ?: Factory::getComposerFile();
+            $pristineExternalComposerFilename = $externalComposerFilename;
+        } else {
+            $externalComposerFilename = Factory::getComposerFile();
+        }
+
         $pristineExternalComposerFilename = $externalComposerFilename;
 
         if (0 !== strpos($externalComposerFilename, '/')) {
@@ -151,9 +157,13 @@ class EmbeddedComposerBuilder
         // External Vendor Directory
         //
 
-        $externalVendorDirectory = ($externalVendorDirectoryOverride || ! $this->vendorDirectory)
-            ? $externalComposerConfig->get('vendor-dir')
-            : $this->vendorDirectory;
+        if ($this->hasInternalRepository) {
+            $externalVendorDirectory = ($externalVendorDirectoryOverride || ! $this->vendorDirectory)
+                ? $externalComposerConfig->get('vendor-dir')
+                : $this->vendorDirectory;
+        } else {
+            $externalVendorDirectory = $externalComposerConfig->get('vendor-dir');
+        }
 
         if (0 !== strpos($externalVendorDirectory, '/')) {
             $externalVendorDirectory = $this->externalRootDirectory.'/'.$externalVendorDirectory;
