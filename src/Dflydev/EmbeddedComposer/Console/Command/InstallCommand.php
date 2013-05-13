@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is a part of Sculpin.
+ * This file is a part of dflydev/embedded-composer.
  *
  * (c) Dragonfly Development Inc.
  *
@@ -30,11 +30,18 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class InstallCommand extends Command
 {
+    public function __construct($commandPrefix = 'composer:')
+    {
+        $this->commandPrefix = $commandPrefix;
+        parent::__construct();
+    }
+
     protected function configure()
     {
+        $fullCommand = $this->commandPrefix.'install';
         $this
-            ->setName('composer:install')
-            ->setDescription('Parses the composer.json file and downloads the needed dependencies.')
+            ->setName($fullCommand)
+            ->setDescription('Install dependencies')
             ->setDefinition(array(
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
@@ -42,12 +49,9 @@ class InstallCommand extends Command
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
             ))
             ->setHelp(<<<EOT
-The <info>install</info> command reads the composer.json file from the
-current directory, processes it, and downloads and installs all the
-libraries and dependencies outlined in that file.
-
-<info>php composer.phar install</info>
-
+The <info>{$fullCommand}</info> command reads a composer.json formatted file.
+The file is read from the current directory unless a project
+directory is specified.
 EOT
             );
     }
