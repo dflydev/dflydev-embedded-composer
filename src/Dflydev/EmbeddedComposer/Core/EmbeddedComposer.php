@@ -19,6 +19,7 @@ use Composer\Json\JsonFile;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Repository\FilesystemRepository;
 use Seld\JsonLint\ParsingException;
 
 /**
@@ -365,14 +366,25 @@ class EmbeddedComposer implements EmbeddedComposerInterface
         // Internal Repository
         //
 
+        $internalRepository = new CompositeRepository(array());
+
         if ($this->hasInternalRepository) {
-            $internalRepository = new InstalledFilesystemRepository(
+            $internalInstalledRepository = new InstalledFilesystemRepository(
                 new JsonFile(
                     $this->internalVendorDirectory.'/composer/installed.json'
                 )
             );
-        } else {
-            $internalRepository = new ArrayRepository;
+
+            $internalRepository->addRepository($internalInstalledRepository);
+        }
+
+        $rootPackageFilename = $this->internalVendorDirectory.'/dflydev/embedded-composer/.root_package.json';
+        if (file_exists($rootPackageFilename)) {
+            $rootPackageRepository = new FilesystemRepository(
+                new JsonFile($rootPackageFilename)
+            );
+
+            $internalRepository->addRepository($rootPackageRepository);
         }
 
         $this->internalRepository = $internalRepository;
@@ -382,11 +394,10 @@ class EmbeddedComposer implements EmbeddedComposerInterface
         // Repository
         //
 
-        $repository = new CompositeRepository(array($externalRepository));
-
-        if ($this->hasInternalRepository) {
-            $repository->addRepository($internalRepository);
-        }
+        $repository = new CompositeRepository(array(
+            $externalRepository,
+            $internalRepository
+        ));
 
         $this->repository = $repository;
 
