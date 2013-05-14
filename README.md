@@ -135,6 +135,28 @@ the `findPackage` method:
 $package = $embeddedComposer->find('acme/myapp');
 ```
 
+Composer does not currently install the root package in the `installed.json`
+that represents the local repository. There is a PR out for this to be added
+to Composer core but until then the following workaround can be used.
+
+Add the following `post-autoload-dump` script to the root package's
+`composer.json`:
+
+```json
+{
+    "scripts": {
+        "post-autoload-dump": "Dflydev\\EmbeddedComposer\\Core\\Script::postAutoloadDump"
+    }
+}
+```
+
+This will write an additional repository to
+`vendor/dflydev/embedded-composer/.root_package.json` and Embedded Composer
+will automatically use it if it can be found. It is important to ensure
+that this file is a part of any phar built if the root package needs to be
+included in the distribution.
+
+
 #### Create a Composer Installer instance
 
 The Installer instance is suitable for processing `install` and `update`
