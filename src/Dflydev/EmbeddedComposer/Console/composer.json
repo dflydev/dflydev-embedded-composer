@@ -17,8 +17,10 @@
     ],
     "require": {
         "php": ">=5.3.2",
-        "embedded-composer/embedded-composer-core": "1.*@dev",
-        "symfony/console": "~2.1"
+        "dflydev/embedded-composer-core": "1.*@dev",
+        "symfony/console": "~2.3@dev",
+
+        "composer/composer": "@dev"
     },
     "autoload": {
         "psr-0": { "Dflydev\\EmbeddedComposer\\Console": "src" }
