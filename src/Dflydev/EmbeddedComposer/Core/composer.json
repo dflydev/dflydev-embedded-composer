@@ -1,6 +1,6 @@
 {
     "name": "dflydev/embedded-composer-core",
-    "description": "Embed Composer into another application",
+    "description": "Embed Composer core",
     "keywords": ["embedded", "composer", "extensibility"],
     "license": "MIT",
     "authors": [
