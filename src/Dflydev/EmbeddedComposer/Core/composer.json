@@ -23,8 +23,9 @@
         "symfony/console": "~2.3@dev"
     },
     "autoload": {
-        "psr-0": { "Dflydev\\EmbeddedComposer\\Core": "src" }
+        "psr-0": { "Dflydev\\EmbeddedComposer\\Core": "" }
     },
+    "target-dir": "Dflydev/EmbeddedComposer/Core",
     "extra": {
         "branch-alias": {
             "dev-master": "1.0-dev"

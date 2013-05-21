@@ -23,8 +23,9 @@
         "composer/composer": "@dev"
     },
     "autoload": {
-        "psr-0": { "Dflydev\\EmbeddedComposer\\Console": "src" }
+        "psr-0": { "Dflydev\\EmbeddedComposer\\Console": "" }
     },
+    "target-dir": "Dflydev/EmbeddedComposer/Console",
     "extra": {
         "branch-alias": {
             "dev-master": "1.0-dev"
