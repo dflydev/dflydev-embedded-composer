@@ -197,7 +197,7 @@ class EmbeddedComposerBuilder
 
         $rootPackageFilename = $this->internalVendorDirectory.'/dflydev/embedded-composer/.root_package.json';
         if (file_exists($rootPackageFilename)) {
-            $rootPackageRepository = new FilesystemRepository(
+            $rootPackageRepository = new InstalledFilesystemRepository(
                 new JsonFile($rootPackageFilename)
             );
 
