@@ -74,6 +74,6 @@ EOT
             ->setDevMode($input->getOption('dev'))
             ->setRunScripts(!$input->getOption('no-scripts'));
 
-        return $installer->run() ? 0 : 1;
+        return $installer->run();
     }
 }

@@ -83,6 +83,6 @@ EOT
             ->setUpdate(true)
             ->setUpdateWhitelist($input->getArgument('packages'));
 
-        return $installer->run() ? 0 : 1;
+        return $installer->run();
     }
 }
