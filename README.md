@@ -132,7 +132,7 @@ the `findPackage` method:
 
 ```php
 <?php
-$package = $embeddedComposer->find('acme/myapp');
+$package = $embeddedComposer->findPackage('acme/myapp');
 ```
 
 Composer does not currently install the root package in the `installed.json`
