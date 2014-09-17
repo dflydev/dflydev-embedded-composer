@@ -45,7 +45,7 @@ class DumpAutoloadCommand extends Command
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 packages to be loaded with classmaps too, good for production.'),
             ))
             ->setHelp(<<<EOT
-<info>app ${fullCommand}</info>
+The <info>${fullCommand} -o</info> command dumps an optimized autoloader.
 
 EOT
             )
