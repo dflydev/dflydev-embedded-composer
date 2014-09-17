@@ -11,7 +11,6 @@
 
 namespace Dflydev\EmbeddedComposer\Console\Command;
 
-use Composer\Factory;
 use Composer\Installer;
 use Composer\IO\ConsoleIO;
 use Dflydev\EmbeddedComposer\Core\EmbeddedComposerAwareInterface;
