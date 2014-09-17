@@ -60,7 +60,8 @@ you want to update on the command line:
 
 <info>app update vendor/package1 foo/mypackage [...]</info>
 EOT
-            );
+            )
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -81,7 +82,8 @@ EOT
             ->setDevMode($input->getOption('dev'))
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setUpdate(true)
-            ->setUpdateWhitelist($input->getArgument('packages'));
+            ->setUpdateWhitelist($input->getArgument('packages'))
+        ;
 
         return $installer->run();
     }
