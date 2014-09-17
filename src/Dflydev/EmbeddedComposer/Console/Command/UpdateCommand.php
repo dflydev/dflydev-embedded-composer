@@ -51,13 +51,12 @@ class UpdateCommand extends Command
             ))
             ->setHelp(<<<EOT
 The <info>{$fullCommand}</info> command reads a composer.json formatted file.
-The file is read from the current directory unless a project
-directory is specified.
+The file is read from the current directory.
 
 To limit the update operation to a few packages, you can list the package(s)
 you want to update on the command line:
 
-<info>app update vendor/package1 foo/mypackage [...]</info>
+<info>{$fullCommand} vendor/package1 foo/mypackage [...]</info>
 
 EOT
             )

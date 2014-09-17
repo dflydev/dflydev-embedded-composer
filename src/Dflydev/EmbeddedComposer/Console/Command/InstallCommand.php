@@ -49,8 +49,7 @@ class InstallCommand extends Command
             ))
             ->setHelp(<<<EOT
 The <info>{$fullCommand}</info> command reads a composer.json formatted file.
-The file is read from the current directory unless a project
-directory is specified.
+The file is read from the current directory. And installs its dependencies.
 
 EOT
             )
