@@ -117,13 +117,13 @@ a phar application prior to requiring the shared block of code.
 
 if (!$classLoader = @include __DIR__.'/../vendor/autoload.php') {
     die ('There is something terribly wrong with your archive.
-Try downloading again?');
+Try downloading it again?');
 }
 
 include('myapp.php');
 ```
 
-### What else...
+### What else ...
 
 #### Find installed package by name
 
