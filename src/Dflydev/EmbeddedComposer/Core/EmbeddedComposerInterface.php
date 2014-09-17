@@ -54,7 +54,7 @@ interface EmbeddedComposerInterface
     /**
      * Create an Installer instance
      *
-     * @param Installer $installer Installer
+     * @param IOInterface $io
      */
     public function createInstaller(IOInterface $io);
 
@@ -62,14 +62,14 @@ interface EmbeddedComposerInterface
      * Get a repository repository representing the external repository and
      * the internal repository if it exists.
      *
-     * @return \Composer\Repository\RepositoryInterface;
+     * @return \Composer\Repository\RepositoryInterface
      */
     public function getRepository();
 
     /**
      * Get the external repository
      *
-     * @return \Composer\Repository\RepositoryInterface;
+     * @return \Composer\Repository\RepositoryInterface
      */
     public function getExternalRepository();
 
@@ -97,7 +97,7 @@ interface EmbeddedComposerInterface
     /**
      * Get the internal repository
      *
-     * @return \Composer\Repository\RepositoryInterface;
+     * @return \Composer\Repository\RepositoryInterface
      */
     public function getInternalRepository();
 

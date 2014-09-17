@@ -26,15 +26,10 @@ use Composer\Repository\RepositoryInterface;
  */
 class EmbeddedComposer implements EmbeddedComposerInterface
 {
-    private $initialized = false;
-
     private $classLoader;
     private $externalRootDirectory;
     private $internalVendorDirectory;
     private $hasInternalRepository = false;
-
-    private $composerFilename;
-    private $vendorDirectory;
 
     private $repository;
 
@@ -178,9 +173,7 @@ class EmbeddedComposer implements EmbeddedComposerInterface
     }
 
     /**
-     * Get the external repository
-     *
-     * @return \Composer\Repository\RepositoryInterface;
+     * {@inheritdoc}
      */
     public function getExternalRepository()
     {
@@ -212,9 +205,7 @@ class EmbeddedComposer implements EmbeddedComposerInterface
     }
 
     /**
-     * Get the internal repository
-     *
-     * @return \Composer\Repository\RepositoryInterface;
+     * {@inheritdoc}
      */
     public function getInternalRepository()
     {
