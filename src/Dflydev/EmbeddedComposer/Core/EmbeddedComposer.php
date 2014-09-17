@@ -16,14 +16,8 @@ use Composer\Config;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\IO\IOInterface;
-use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
-use Composer\Repository\ArrayRepository;
-use Composer\Repository\CompositeRepository;
-use Composer\Repository\InstalledFilesystemRepository;
-use Composer\Repository\FilesystemRepository;
 use Composer\Repository\RepositoryInterface;
-use Seld\JsonLint\ParsingException;
 
 /**
  * Embedded Composer.
