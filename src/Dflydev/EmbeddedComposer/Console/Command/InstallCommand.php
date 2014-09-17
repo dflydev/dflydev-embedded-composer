@@ -52,6 +52,7 @@ class InstallCommand extends Command
 The <info>{$fullCommand}</info> command reads a composer.json formatted file.
 The file is read from the current directory unless a project
 directory is specified.
+
 EOT
             );
     }

@@ -46,6 +46,7 @@ class DumpAutoloadCommand extends Command
             ))
             ->setHelp(<<<EOT
 <info>app ${fullCommand}</info>
+
 EOT
             )
         ;

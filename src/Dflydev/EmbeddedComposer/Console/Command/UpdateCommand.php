@@ -59,6 +59,7 @@ To limit the update operation to a few packages, you can list the package(s)
 you want to update on the command line:
 
 <info>app update vendor/package1 foo/mypackage [...]</info>
+
 EOT
             );
     }
