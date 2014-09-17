@@ -54,7 +54,8 @@ The file is read from the current directory unless a project
 directory is specified.
 
 EOT
-            );
+            )
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -73,7 +74,8 @@ EOT
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($input->getOption('prefer-source'))
             ->setDevMode($input->getOption('dev'))
-            ->setRunScripts(!$input->getOption('no-scripts'));
+            ->setRunScripts(!$input->getOption('no-scripts'))
+        ;
 
         return $installer->run();
     }
