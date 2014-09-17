@@ -33,6 +33,7 @@ class EmbeddedComposerBuilder
 
     private $composerFilename;
     private $vendorDirectory;
+    private $error = false;
 
     /**
      * Constructor.
@@ -105,7 +106,6 @@ class EmbeddedComposerBuilder
 
         if ($this->hasInternalRepository) {
             $externalComposerFilename = $this->composerFilename ?: Factory::getComposerFile();
-            $pristineExternalComposerFilename = $externalComposerFilename;
         } else {
             $externalComposerFilename = Factory::getComposerFile();
         }
@@ -149,6 +149,9 @@ class EmbeddedComposerBuilder
             $this->error = new \InvalidArgumentException($message.PHP_EOL.$instructions);
         }
 
+        if (false !== $this->error) {
+            throw $this->error;
+        }
 
         //
         // External Vendor Directory
