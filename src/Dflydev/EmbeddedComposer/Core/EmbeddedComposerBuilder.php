@@ -33,7 +33,7 @@ class EmbeddedComposerBuilder
 
     private $composerFilename;
     private $vendorDirectory;
-    private $error = false;
+    private $error = null;
 
     /**
      * Constructor.
@@ -147,10 +147,6 @@ class EmbeddedComposerBuilder
                 ' file as described in the http://getcomposer.org/ "Getting Started" section';
 
             $this->error = new \InvalidArgumentException($message.PHP_EOL.$instructions);
-        }
-
-        if (false !== $this->error) {
-            throw $this->error;
         }
 
         //
