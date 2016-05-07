@@ -155,10 +155,15 @@ class EmbeddedComposer implements EmbeddedComposerInterface
             $installer->setAdditionalInstalledRepository(
                 $this->internalRepository
             );
+            $pluginManager = $composer->getPluginManager();
 
-            $composer->getPluginManager()->loadRepository(
-                $this->internalRepository
-            );
+            foreach ($this->internalRepository->getPackages() as $package) {
+                if ($package instanceof AliasPackage || 'composer-plugin' !== $package->getType()) {
+                    continue;
+                }
+
+                $pluginManager->registerPackage($package);
+            }
         }
 
         return $installer;
