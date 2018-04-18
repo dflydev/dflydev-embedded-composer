@@ -112,7 +112,7 @@ class EmbeddedComposerBuilder
 
         $pristineExternalComposerFilename = $externalComposerFilename;
 
-        if (0 !== strpos($externalComposerFilename, '/')) {
+        if (0 !== strpos($externalComposerFilename, '/') && 1 !== strpos($externalComposerFilename, ':')) {
             $externalComposerFilename = $this->externalRootDirectory.'/'.$externalComposerFilename;
         }
 
@@ -161,7 +161,7 @@ class EmbeddedComposerBuilder
             $externalVendorDirectory = $externalComposerConfig->get('vendor-dir');
         }
 
-        if (0 !== strpos($externalVendorDirectory, '/')) {
+        if (0 !== strpos($externalVendorDirectory, '/') && 1 !== strpos($externalVendorDirectory, ':')) {
             $externalVendorDirectory = $this->externalRootDirectory.'/'.$externalVendorDirectory;
         }
 
